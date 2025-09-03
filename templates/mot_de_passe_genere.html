@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mot de passe généré</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <h1>Mot de passe généré</h1>
+    <p>Voici le mot de passe généré pour ce compte :</p>
+    <div style="font-size: 1.5em; font-weight: bold; padding: 10px; background: #f0f0f0; display: inline-block;">
+        {{ mdp }}
+    </div>
+    <p>Copie-le avant de continuer.</p>
+    <a href="/membre/{{ membre_id }}">Retour aux comptes</a>
+</body>
+</html>

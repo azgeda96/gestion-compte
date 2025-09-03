@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestion des comptes{% endblock %}</title>
+    <!-- Lien vers le CSS global -->
+    <link rel="stylesheet" href="/static/style.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Inclusion de la navbar -->
+    {% include 'navbar.html' %}
+
+    <!-- Contenu spécifique à chaque page -->
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Scripts globaux (ex: génération de mot de passe) -->
+    <script>
+        async function genererMotDePasse() {
+            const response = await fetch("/generer_mot_de_passe");
+            const data = await response.json();
+            const mdpField = document.querySelector('input[name="mdp"]');
+            if (mdpField) {
+                mdpField.value = data.mdp;
+            } else {
+                alert("Mot de passe généré : " + data.mdp);
+            }
+        }
+    </script>
+
+    <!-- Scripts spécifiques à chaque page -->
+    {% block script %}{% endblock %}
+</body>
+</html>

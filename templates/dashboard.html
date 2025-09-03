@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+    <h1>Tableau de bord des comptes</h1>
+    <!-- Bouton pour ouvrir la modale -->
+    <button id="ouvrirModaleMembre" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Ajouter un membre
+    </button>
+
+    <!-- Fenêtre modale (cachée par défaut) -->
+    <div id="modaleAjoutMembre" class="modale" style="display: none;">
+        <div class="contenu-modale">
+            <span class="fermer">&times;</span>
+            <h2>Ajouter un membre</h2>
+            <form id="formAjoutMembre" action="/ajouter_membre" method="POST">
+                <label>Nom du membre :</label>
+                <input type="text" name="nom" required style="width: 100%; padding: 8px; margin: 8px 0;">
+                <div style="text-align: right; margin-top: 15px;">
+                    <button type="submit" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Valider
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <ul>
+        {% for membre in membres %}
+            <li><a href="/membre/{{ membre[0] }}">{{ membre[1] }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block script %}
+<script>
+    // Ouvrir la modale
+    document.getElementById("ouvrirModaleMembre").addEventListener("click", function() {
+        document.getElementById("modaleAjoutMembre").style.display = "flex";
+    });
+
+    // Fermer la modale (croix en haut à droite)
+    document.querySelector(".fermer").addEventListener("click", function() {
+        document.getElementById("modaleAjoutMembre").style.display = "none";
+    });
+
+    // Fermer la modale si on clique en dehors
+    window.addEventListener("click", function(event) {
+        const modale = document.getElementById("modaleAjoutMembre");
+        if (event.target === modale) {
+            modale.style.display = "none";
+        }
+    });
+
+    // Soumettre le formulaire et recharger la page après ajout
+    document.getElementById("formAjoutMembre").addEventListener("submit", function(e) {
+        e.preventDefault();
+        fetch("/ajouter_membre", {
+            method: "POST",
+            body: new FormData(this)
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload(); // Recharge la page pour afficher le nouveau membre
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+
+{% block content %}
+    
+    <h1>Comptes de {{ nom }}</h1>
+
+    <!-- Bouton pour ajouter un compte (modale) -->
+    <button id="ouvrirModaleAjoutCompte" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px;">
+        Ajouter un compte
+    </button>
+
+    <!-- Modale pour ajouter un compte -->
+    <div id="modaleAjoutCompte" class="modale" style="display: none;">
+        <div class="contenu-modale">
+            <span class="fermer">&times;</span>
+            <h2>Ajouter un compte</h2>
+            <form id="formAjoutCompte" method="POST">
+                <input type="hidden" name="membre_id" value="{{ membre_id }}">
+                <!-- Débogage : Affiche le nombre de plateformes -->
+                <p style="display: none;">Nombre de plateformes : {{ plateformes|length }}</p>
+
+                <label>Plateforme :</label>
+                <select name="plateforme_id" required style="width: 100%; padding: 8px; margin: 8px 0;">
+                    {% for plateforme in plateformes %}
+                        <option value="{{ plateforme[0] }}">{{ plateforme[1] }}</option>
+                    {% endfor %}
+                </select>
+                <label>Utilisateur :</label>
+                <input type="text" name="user" required style="width: 100%; padding: 8px; margin: 8px 0;">
+                <label>Email :</label>
+                <input type="email" name="mail" required style="width: 100%; padding: 8px; margin: 8px 0;">
+                <label>Mot de passe :</label>
+                <div style="display: flex; align-items: center; margin: 8px 0;">
+                    <input type="password" name="mdp" id="mdpNouveauCompte" required style="width: 100%; padding: 8px;">
+                    <button type="button" onclick="genererMotDePassePourModale('mdpNouveauCompte')" style="margin-left: 5px; padding: 5px 10px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Générer
+                    </button>
+                </div>
+                <div style="text-align: right; margin-top: 15px;">
+                    <button type="submit" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Valider
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modale pour modifier un compte -->
+    <div id="modaleModifierCompte" class="modale" style="display: none;">
+        <div class="contenu-modale">
+            <span class="fermer">&times;</span>
+            <h2>Modifier le compte</h2>
+            <form id="formModifierCompte" method="POST">
+                <input type="hidden" name="compte_id" id="modaleCompteId">
+                <label>Plateforme :</label>
+                <select name="plateforme_id" id="modalePlateformeId" required style="width: 100%; padding: 8px; margin: 8px 0;">
+                    {% for plateforme in plateformes %}
+                        <option value="{{ plateforme[0] }}">{{ plateforme[1] }}</option>
+                    {% endfor %}
+                </select>
+                <label>Utilisateur :</label>
+                <input type="text" name="user" id="modaleUser" required style="width: 100%; padding: 8px; margin: 8px 0;">
+                <label>Email :</label>
+                <input type="email" name="mail" id="modaleMail" required style="width: 100%; padding: 8px; margin: 8px 0;">
+                <label>Mot de passe :</label>
+                <div style="display: flex; align-items: center; margin: 8px 0;">
+                    <input type="password" name="mdp" id="modaleMdp" required style="width: 100%; padding: 8px;">
+                    <button type="button" onclick="genererMotDePassePourModale('modaleMdp')" style="margin-left: 5px; padding: 5px 10px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Générer
+                    </button>
+                </div>
+                <div style="text-align: right; margin-top: 15px;">
+                    <button type="submit" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modale de confirmation de suppression de compte -->
+    <div id="modaleSupprimerCompte" class="modale" style="display: none;">
+        <div class="contenu-modale" style="text-align: center;">
+            <span class="fermer">&times;</span>
+            <h2 style="color: #f44336; font-size: 1.5em; margin-bottom: 10px;">⚠️ ATTENTION ⚠️</h2>
+            <p style="font-weight: bold; font-size: 1.1em; margin-bottom: 15px;">
+                Vous allez supprimer un compte de manière <strong>définitive</strong>.
+            </p>
+            <p style="font-weight: bold; color: #d32f2f; margin-bottom: 20px;">
+                Cette action est <strong>IRRÉVERSIBLE</strong> :
+            </p>
+            <ul style="text-align: left; margin: 0 auto; max-width: 300px; color: #5d4037; font-weight: normal;">
+                <li>Le compte sera <strong>perdu à jamais</strong>.</li>
+                <li>Le mot de passe et les identifiants ne pourront <strong>plus être récupérés</strong>.</li>
+            </ul>
+            <p style="font-weight: bold; margin: 20px 0 15px 0; color: #d32f2f;">
+                Êtes-vous <strong>absolument sûr</strong> de vouloir continuer ?
+            </p>
+            <div style="margin-top: 20px;">
+                <button id="btnConfirmerSuppressionCompte"
+                        style="padding: 10px 20px; background-color: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-weight: bold;">
+                    OUI, SUPPRIMER DÉFINITIVEMENT
+                </button>
+                <button id="btnAnnulerSuppressionCompte"
+                        style="padding: 10px 20px; background-color: #757575; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    NON, ANNULER
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Tableau des comptes -->
+    <table>
+        <tr>
+            <th>Plateforme</th>
+            <th>Utilisateur</th>
+            <th>Email</th>
+            <th>Mot de passe</th>
+            <th>Actions</th>
+        </tr>
+        {% for compte in comptes %}
+        <tr>
+            <td>{{ compte[2] }}</td>
+            <td>{{ compte[3] }}</td>
+            <td>{{ compte[4] }}</td>
+            <td>
+                <span id="mdp-{{ compte[0] }}" data-password="{{ compte[5] }}">*****</span>
+                <button onclick="togglePassword(this)" style="margin-left: 10px; padding: 3px 8px; font-size: 0.8em; background: none; border: none; cursor: pointer;">
+                    👁️
+                </button>
+            </td>
+            <td>
+                <button class="btn-modifier-compte"
+                        data-compte-id="{{ compte[0] }}"
+                        data-plateforme-id="{{ compte[1] }}"
+                        data-user="{{ compte[3] }}"
+                        data-email="{{ compte[4] }}"
+                        data-mdp="{{ compte[5] }}"
+                        style="margin-right: 10px; padding: 5px 10px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Modifier
+                </button>
+                <button class="btn-supprimer-compte"
+                        data-compte-id="{{ compte[0] }}"
+                        data-membre-id="{{ membre_id }}"
+                        style="padding: 5px 10px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Supprimer
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/" style="display: inline-block; margin-top: 10px; padding: 8px 15px; background-color: #757575; color: white; border-radius: 4px; text-decoration: none;">
+        Retour au tableau de bord
+    </a>
+{% endblock %}
+
+
+{% block script %}
+<script>
+    // Ouvrir la modale d'ajout de compte
+    document.getElementById("ouvrirModaleAjoutCompte").addEventListener("click", function() {
+        document.getElementById("modaleAjoutCompte").style.display = "flex";
+    });
+
+// Ouvrir la modale de modification de compte
+document.querySelectorAll(".btn-modifier-compte").forEach(button => {
+    button.addEventListener("click", function() {
+        const compteId = this.getAttribute("data-compte-id");
+        const plateformeId = this.getAttribute("data-plateforme-id");
+        const user = this.getAttribute("data-user");
+        const mdp = this.getAttribute("data-mdp");
+
+        document.getElementById("modaleCompteId").value = compteId;
+        document.getElementById("modalePlateformeId").value = plateformeId;  // <-- Sélectionne la plateforme actuelle
+        document.getElementById("modaleUser").value = user;
+        document.getElementById("modaleMail").value = user;  // (Remplace par un champ email si nécessaire)
+        document.getElementById("modaleMdp").value = mdp;
+        document.getElementById("modaleModifierCompte").style.display = "flex";
+    });
+});
+
+
+
+    // Générer un mot de passe dans une modale
+    function genererMotDePassePourModale(fieldId) {
+        fetch("/generer_mot_de_passe")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById(fieldId).value = data.mdp;
+            });
+    }
+
+    // Fermer les modales
+    document.querySelectorAll(".fermer").forEach(span => {
+        span.addEventListener("click", function() {
+            this.closest(".modale").style.display = "none";
+        });
+    });
+
+    // Fermer les modales si on clique en dehors
+    window.addEventListener("click", function(event) {
+        if (event.target.classList.contains("modale")) {
+            event.target.style.display = "none";
+        }
+    });
+
+    // Soumettre le formulaire d'ajout de compte
+    document.getElementById("formAjoutCompte").addEventListener("submit", function(e) {
+        e.preventDefault();
+        fetch(`/ajouter_compte/${{ membre_id }}`, {  // Correction ici
+            method: "POST",
+            body: new FormData(this)
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    });
+
+    // Soumettre le formulaire de modification de compte
+    document.getElementById("formModifierCompte").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const compteId = document.getElementById("modaleCompteId").value;
+        fetch(`/modifier_compte/${compteId}`, {
+            method: "POST",
+            body: new FormData(this)
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    });
+
+    // Ouvrir la modale de suppression de compte
+    document.querySelectorAll(".btn-supprimer-compte").forEach(button => {
+        button.addEventListener("click", function() {
+            const compteId = this.getAttribute("data-compte-id");
+            const membreId = this.getAttribute("data-membre-id");
+            document.getElementById("modaleSupprimerCompte").style.display = "flex";
+            document.getElementById("btnConfirmerSuppressionCompte").onclick = function() {
+                window.location.href = `/supprimer_compte/${compteId}/${membreId}`;
+            };
+        });
+    });
+
+    // Annuler la suppression de compte
+    document.getElementById("btnAnnulerSuppressionCompte").addEventListener("click", function() {
+        document.getElementById("modaleSupprimerCompte").style.display = "none";
+    });
+
+
+    // Fonction existante pour afficher/masquer les mots de passe
+    function togglePassword(button) {
+        const passwordSpan = button.parentNode.querySelector("span");
+        if (passwordSpan.textContent === "*****") {
+            passwordSpan.textContent = passwordSpan.getAttribute("data-password");
+            button.textContent = "🔒";
+        } else {
+            passwordSpan.setAttribute("data-password", passwordSpan.textContent);
+            passwordSpan.textContent = "*****";
+            button.textContent = "👁️";
+        }
+    }
+</script>
+{% endblock %}

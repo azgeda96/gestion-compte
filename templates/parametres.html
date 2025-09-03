@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}Paramètres{% endblock %}
+{% block content %}
+    <h1>Paramètres</h1>
+
+    <!-- Onglets pour naviguer entre les sections -->
+    <div style="margin-bottom: 20px;">
+        <button id="btnPlateformes" class="btn-onglet btn-onglet-actif" onclick="showSection('plateformes')">
+            Gestion des plateformes
+        </button>
+        {% if session.get('user_admin', False) %}
+            <button id="btnUtilisateurs" class="btn-onglet" onclick="showSection('utilisateurs')">
+                Gestion des utilisateurs
+            </button>
+        {% endif %}
+    </div>
+
+    <!-- Section Gestion des plateformes (visible par tous) -->
+    <div id="sectionPlateformes" style="display: block;">
+        <h2>Gestion des plateformes</h2>
+
+        <!-- Formulaire pour ajouter une plateforme -->
+        <form method="POST" action="/ajouter_plateforme" style="margin-bottom: 20px;">
+            <label>Nouvelle plateforme :</label>
+            <input type="text" name="nom" required style="padding: 8px; margin: 0 10px;">
+            <button type="submit" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Ajouter
+            </button>
+        </form>
+
+        <!-- Modale pour modifier une plateforme -->
+        <div id="modaleModifierPlateforme" class="modale" style="display: none;">
+            <div class="contenu-modale">
+                <span class="fermer">&times;</span>
+                <h2>Modifier la plateforme</h2>
+                <form id="formModifierPlateforme" method="POST">
+                    <input type="hidden" name="plateforme_id" id="modalePlateformeId">
+                    <label>Nouveau nom :</label>
+                    <input type="text" name="nom" id="modaleNomPlateforme" required style="width: 100%; padding: 8px; margin: 8px 0;">
+                    <div style="text-align: right; margin-top: 15px;">
+                        <button type="submit" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modale de confirmation de suppression -->
+        <div id="modaleSupprimerPlateforme" class="modale" style="display: none;">
+            <div class="contenu-modale" style="text-align: center;">
+                <span class="fermer">&times;</span>
+                <h2 style="color: #f44336; font-size: 1.5em; margin-bottom: 10px;">⚠️ ATTENTION ⚠️</h2>
+                <p style="font-weight: bold; font-size: 1.1em; margin-bottom: 15px;">
+                    Vous allez supprimer la plateforme <strong><span id="modaleNomASupprimer" style="color: #f44336;"></span></strong>.
+                </p>
+                <p style="font-weight: bold; color: #d32f2f; margin-bottom: 20px;">
+                    Cette action est <strong>IRRÉVERSIBLE</strong> et affectera <strong>TOUS LES UTILISATEURS</strong> :
+                </p>
+                <ul style="text-align: left; margin: 0 auto; max-width: 300px; color: #5d4037; font-weight: normal;">
+                    <li>Tous les comptes associés à cette plateforme seront <strong>perdus</strong>.</li>
+                    <li>Les mots de passe et identifiants ne pourront <strong>plus être récupérés</strong>.</li>
+                    <li>Cette suppression impactera <strong>tous les membres</strong> de l'application.</li>
+                </ul>
+                <p style="font-weight: bold; margin: 20px 0 15px 0; color: #d32f2f;">
+                    Êtes-vous <strong>absolument sûr</strong> de vouloir continuer ?
+                </p>
+                <div style="margin-top: 20px;">
+                    <button id="btnConfirmerSuppression"
+                            style="padding: 10px 20px; background-color: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-weight: bold;">
+                        OUI, SUPPRIMER DÉFINITIVEMENT
+                    </button>
+                    <button id="btnAnnulerSuppression"
+                            style="padding: 10px 20px; background-color: #757575; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                        NON, ANNULER
+                    </button>
+                </div>
+                <div style="text-align: left; margin: 15px auto; max-width: 300px;">
+                    <label style="font-weight: bold;">
+                        <input type="checkbox" id="confirmationSuppression" style="margin-right: 8px;">
+                        Je comprends que cette action est irréversible et affectera tous les utilisateurs.
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tableau des plateformes -->
+        <table>
+            <tr>
+                <th>Plateforme</th>
+                <th>Actions</th>
+            </tr>
+            {% for plateforme in plateformes %}
+            <tr>
+                <td>{{ plateforme[1] }}</td>
+                <td>
+                    <button class="btn-modifier-plateforme"
+                            data-plateforme-id="{{ plateforme[0] }}"
+                            data-nom="{{ plateforme[1] }}"
+                            style="margin-right: 10px; padding: 5px 10px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Modifier
+                    </button>
+                    {% if session.get('user_admin', False) %}
+                        <button class="btn-supprimer-plateforme"
+                                data-plateforme-id="{{ plateforme[0] }}"
+                                data-nom="{{ plateforme[1] }}"
+                                style="padding: 5px 10px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Supprimer
+                        </button>
+                    {% else %}
+                        <button disabled
+                                style="padding: 5px 10px; background: #cccccc; color: #666666; border: none; border-radius: 4px; cursor: not-allowed;"
+                                title="Réservé aux administrateurs">
+                            Supprimer
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- Section Gestion des utilisateurs (visible uniquement par l'admin) -->
+    {% if session.get('user_admin', False) %}
+    <div id="sectionUtilisateurs" style="display: none;">
+        <h2>Gestion des utilisateurs</h2>
+
+        <!-- Formulaire pour ajouter un utilisateur -->
+        <form method="POST" action="/ajouter_utilisateur" style="margin-bottom: 20px;">
+            <label>Nom :</label>
+            <input type="text" name="nom" required style="padding: 8px; margin: 0 10px;">
+            <label>Login :</label>
+            <input type="text" name="login" required style="padding: 8px; margin: 0 10px;">
+            <label>Mot de passe :</label>
+            <input type="password" name="password" required style="padding: 8px; margin: 0 10px;">
+            <label style="margin: 0 10px;">
+                <input type="checkbox" name="est_admin" style="margin-right: 5px;"> Admin
+            </label>
+            <button type="submit" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Ajouter
+            </button>
+        </form>
+
+        <!-- Tableau des utilisateurs -->
+        <table>
+            <tr>
+                <th>Nom</th>
+                <th>Login</th>
+                <th>Admin</th>
+                <th>Actions</th>
+            </tr>
+            {% for user in utilisateurs %}
+            <tr>
+                <td>{{ user[1] }}</td>
+                <td>{{ user[2] }}</td>
+                <td>{{ "Oui" if user[4] else "Non" }}</td>
+                <td>
+                    <a href="/modifier_utilisateur/{{ user[0] }}" style="margin-right: 10px; padding: 5px 10px; background: #2196F3; color: white; border-radius: 4px; text-decoration: none;">
+                        Modifier
+                    </a>
+                    <a href="/gerer_permissions/{{ user[0] }}" style="margin-right: 10px; padding: 5px 10px; background: #ff9800; color: white; border-radius: 4px; text-decoration: none;">
+                        Permissions
+                    </a>
+                    <a href="/supprimer_utilisateur/{{ user[0] }}" style="padding: 5px 10px; background: #f44336; color: white; border-radius: 4px; text-decoration: none;">
+                        Supprimer
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}  <!-- Fermeture du bloc if pour la section utilisateurs -->
+
+    <a href="/" style="display: inline-block; margin-top: 10px; padding: 8px 15px; background-color: #757575; color: white; border-radius: 4px; text-decoration: none;">
+        Retour au tableau de bord
+    </a>
+{% endblock %}
+
+{% block script %}
+<script>
+    // Stocke le statut admin dans une variable JavaScript
+    const isAdmin = {{ 'true' if session.get('user_admin', False) else 'false' }};
+
+    function showSection(sectionId) {
+        document.getElementById('sectionPlateformes').style.display = 'none';
+
+        if (isAdmin && sectionId !== 'plateformes') {
+            document.getElementById('sectionUtilisateurs').style.display = 'none';
+        }
+
+        document.getElementById('section' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1)).style.display = 'block';
+
+        // Gestion des onglets actifs/inactifs
+        document.querySelectorAll('.btn-onglet').forEach(btn => {
+            btn.classList.remove('btn-onglet-actif');
+            btn.classList.add('btn-onglet-inactif');
+        });
+        document.getElementById('btn' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1)).classList.remove('btn-onglet-inactif');
+        document.getElementById('btn' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1)).classList.add('btn-onglet-actif');
+    }
+
+    // Ouvrir la modale de modification de plateforme
+    document.querySelectorAll(".btn-modifier-plateforme").forEach(button => {
+        button.addEventListener("click", function() {
+            const plateformeId = this.getAttribute("data-plateforme-id");
+            const nom = this.getAttribute("data-nom");
+            document.getElementById("modalePlateformeId").value = plateformeId;
+            document.getElementById("modaleNomPlateforme").value = nom;
+            document.getElementById("modaleModifierPlateforme").style.display = "flex";
+        });
+    });
+
+    // Fermer les modales
+    document.querySelectorAll(".fermer").forEach(span => {
+        span.addEventListener("click", function() {
+            this.closest(".modale").style.display = "none";
+        });
+    });
+
+    // Fermer les modales si on clique en dehors
+    window.addEventListener("click", function(event) {
+        if (event.target.classList.contains("modale")) {
+            event.target.style.display = "none";
+        }
+    });
+
+    // Soumettre le formulaire de modification de plateforme
+    document.getElementById("formModifierPlateforme").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const plateformeId = document.getElementById("modalePlateformeId").value;
+        fetch(`/modifier_plateforme/${plateformeId}`, {
+            method: "POST",
+            body: new FormData(this)
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    });
+
+    // Ouvrir la modale de suppression de plateforme
+    document.querySelectorAll(".btn-supprimer-plateforme").forEach(button => {
+        button.addEventListener("click", function() {
+            const plateformeId = this.getAttribute("data-plateforme-id");
+            const nom = this.getAttribute("data-nom");
+            document.getElementById("modaleNomASupprimer").textContent = nom;
+            document.getElementById("modaleSupprimerPlateforme").style.display = "flex";
+            document.getElementById("btnConfirmerSuppression").onclick = function() {
+                window.location.href = `/supprimer_plateforme/${plateformeId}`;
+            };
+        });
+    });
+
+    // Annuler la suppression
+    document.getElementById("btnAnnulerSuppression").addEventListener("click", function() {
+        document.getElementById("modaleSupprimerPlateforme").style.display = "none";
+    });
+
+    // Désactiver le bouton de confirmation par défaut
+    document.getElementById("btnConfirmerSuppression").disabled = true;
+
+    // Activer le bouton si la case est cochée
+    document.getElementById("confirmationSuppression").addEventListener("change", function() {
+        document.getElementById("btnConfirmerSuppression").disabled = !this.checked;
+    });
+</script>
+{% endblock %}
+
+<!-- CSS pour les onglets -->
+<style>
+    .btn-onglet {
+        padding: 8px 15px;
+        margin-right: 5px;
+        border: none;
+        border-radius: 4px 4px 0 0;
+        cursor: pointer;
+        background-color: #f1f1f1;
+        color: #333;
+        border-bottom: 2px solid transparent;
+    }
+
+    .btn-onglet-actif {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        border-bottom: 2px solid #4CAF50 !important;
+    }
+
+    .btn-onglet-inactif {
+        background-color: #f1f1f1;
+        color: #333;
+    }
+
+    .btn-onglet:focus {
+        outline: none;
+    }
+</style>

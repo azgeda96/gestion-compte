@@ -1,0 +1,23 @@
+<nav>
+    {% if 'user_id' in session %}
+        <span style="margin-right: 15px;">Connecté en tant que {{ session['user_nom'] }}</span>
+        <a href="/">Tableau de bord</a>
+        {% if session.get('user_admin', False) %}
+            <a href="/parametres">Paramètres</a>
+        {% endif %}
+        <a href="/logout" style="float: right;">Déconnexion</a>
+    {% endif %}
+</nav>
+
+<script>
+    document.getElementById("genererMdpBtn").addEventListener("click", async function() {
+        const response = await fetch("/generer_mot_de_passe");
+        const data = await response.json();
+        const mdpField = document.querySelector('input[name="mdp"]');
+        if (mdpField) {
+            mdpField.value = data.mdp;
+        } else {
+            alert("Mot de passe généré : " + data.mdp);
+        }
+    });
+</script>

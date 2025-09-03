@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+    <h1>Ajouter un compte</h1>
+    <form method="POST">
+        <label>Plateforme :</label>
+        <select name="plateforme_id" required>
+            {% for plateforme in plateformes %}
+                <option value="{{ plateforme[0] }}">{{ plateforme[1] }}</option>
+            {% endfor %}
+        </select><br>
+        <label>Utilisateur :</label>
+        <input type="text" name="user" required><br>
+        <label>Email :</label>
+        <input type="email" name="mail" required><br>
+        <label>Mot de passe :</label>
+        <div style="display: flex; align-items: center;">
+            <input type="password" name="mdp" id="mdp" {% if mdp %}value="{{ mdp }}"{% endif %} required style="flex: 1;">
+            <button type="button" onclick="togglePasswordVisibility('mdp')" style="margin-left: 5px; padding: 5px 10px;">👁️</button>
+        </div>
+        <button type="submit">Ajouter</button>
+    </form>
+    <a href="/membre/{{ membre_id }}">Retour</a>
+{% endblock %}
+
+{% block script %}
+
+<script>
+    function togglePasswordVisibility(fieldId) {
+        const field = document.getElementById(fieldId);
+        const button = event.target;
+        if (field.type === "password") {
+            field.type = "text";
+            button.textContent = "🔒";
+        } else {
+            field.type = "password";
+            button.textContent = "👁️";
+        }
+    }
+</script>
+
+{% endblock %}

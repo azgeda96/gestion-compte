@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+    <h1>Modifier la plateforme</h1>
+    <form method="POST">
+        <label>Nouveau nom :</label>
+        <input type="text" name="nom" value="{{ nom }}" required>
+        <button type="submit">Enregistrer</button>
+    </form>
+    <a href="/parametres">Retour aux paramètres</a>
+{% endblock %}

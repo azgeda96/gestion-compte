@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Gestion des comptes</title>
+    <!-- Intègre ton fichier CSS existant -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Style spécifique à la page de login (complémentaire) -->
+    <style>
+        /* Style minimal pour centrer le formulaire, même sans base.html */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-container h1 {
+            margin-bottom: 20px;
+            color: #4CAF50; /* À adapter selon ton style.css */
+        }
+        .error-message {
+            color: red;
+            margin-bottom: 15px;
+        }
+        /* Le reste des styles sera géré par ton style.css */
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Connexion</h1>
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
+        <form method="POST" action="/login" class="login-form">
+            <div class="form-group">
+                <label for="login">Login :</label>
+                <input type="text" id="login" name="login" required autofocus class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="password">Mot de passe :</label>
+                <input type="password" id="password" name="password" required class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                Se connecter
+            </button>
+        </form>
+    </div>
+</body>
+</html>
